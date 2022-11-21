@@ -20,6 +20,7 @@
   "homepage": "https://github.com/Thedanbrown/employee-database-app#readme",
   "dependencies": {
     "console.table": "^0.10.0",
+    "dotenv": "^16.0.3",
     "inquirer": "^8.2.4",
     "mysql2": "^2.3.3",
     "sequelize": "^6.25.7"

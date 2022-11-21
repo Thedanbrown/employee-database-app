@@ -4,4 +4,4 @@ class Department{
     }
 }
 
-module.exports = Department;
+module.exports = department;

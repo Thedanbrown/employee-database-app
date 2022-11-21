@@ -2,11 +2,11 @@
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const cTable = require('console.table');
-const sequelize = require('.assets/config/connection');
+const sequelize = require('./assets/config/connection.js');
 //bringing in constructor classes
-const Department = require(__dirname + '/assets/classes/Department.js');
-const Role = require(__dirname + '/assets/classes/Role.js');
-const Employee = require(__dirname + '/assets/classes/Employee.js');
+const department = require('./assets/classes/department.js');
+const role = require('./assets/classes/role.js');
+const employee = require('./assets/classes/employee.js');
 
 const PORT = process.env.PORT || 3001;
 

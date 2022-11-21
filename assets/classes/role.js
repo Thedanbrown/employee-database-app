@@ -6,4 +6,4 @@ class Role {
     }
 }
 
-module.exports = Role;
+module.exports = role;
