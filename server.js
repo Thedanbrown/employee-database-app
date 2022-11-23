@@ -4,8 +4,7 @@ const inquirer = require('inquirer');
 const cTable = require('console.table');
 const Sequelize = require('sequelize');
 const sequelize = require('./assets/config/connection.js');
-const Department = require('./assets/models/department.js');
-//bringing in constructor classes
+//bringing in sequilize models  classes
 const department = require(__dirname + '/assets/models/department.js');
 const role = require(__dirname + '/assets/models/role.js');
 const employee = require(__dirname + '/assets/models/employee.js');
@@ -19,28 +18,20 @@ sequelize.authenticate().then(() => {
     console.error('Unable to connect to the database: ', error);
 });
 
-// const db = mysql.createConnection(
-//     {
-//     host: 'localhost',
-//     user: 'root',
-//     password: 'admin',
-//     database: 'employee_db'
-//     },
-// );
-
-function init() {
+async function init() {
     inquirer.prompt([
         {
             type: 'list',
             name: 'init',
             message: 'Please choose an option below',
-            choices: ['View Departments', 'View Roles', 'View Employees', 'Add Department', 'Add Role', 'Add Employee', 'Update Employee', 'Exit'],
-            pageSize: 8
+            choices: ['View Departments', 'View Roles', 'View Employees', 'Add Department', 'Add Role', 'Add Employee', 'Update Employees Role', 'Exit'],
+            pageSize: 8,
+            default: 0
         }
     ]).then((selection) => {
         switch(selection.init) {
-        case 'Update Employee':
-            updateEmployee();
+        case 'Update Employees Role':
+            updateEmployeesRole();
             break;
         case 'Add Department':
             addDepartment();
@@ -112,7 +103,7 @@ async function addRole() {
             type: 'list',
             name: 'departmentName',
             message: 'New Role department?',
-            choices: departmentNames,
+            choices: departmentNames
         }
     ]).then((data) => {
         let departmentId = -1;
@@ -136,6 +127,16 @@ async function insertRole(newTitle, newSalary, newDepId) {
 }
 
 async function addEmployee() {
+    const roles = await role.findAll({ raw: true })
+    const roleNames = [];
+    roles.forEach((role) => {
+        roleNames.push(role.title)
+    });
+    const managers = await employee.findAll({ raw: true })
+    const managerNames = [];
+    managers.forEach((employee) => {
+        managerNames.push(`${employee.first_name}  ${employee.last_name}`)
+    });
     const addR = await inquirer.prompt([
         {
             type: 'input',
@@ -148,23 +149,37 @@ async function addEmployee() {
             message: 'Employees Last Name?',
         },
         {
-            type: 'input',
-            name: 'role_id',
+            type: 'list',
+            name: 'role',
             message: 'New employees role?',
+            choices: roleNames,
         },
         {
-            type: 'input',
-            name: 'manager_id',
+            type: 'list',
+            name: 'manager',
             message: 'Who is the employees Manager?',
+            choices: managerNames,
         }
     ]).then((data) => {
-        insertEmployee(data.first_name, data.last_name, data.role_id, data.manager_id);
+        let roleId = -1;
+        roles.forEach((role) => {
+            if (role.title === data.role) {
+                roleId = role.id;
+            }
+        })
+        let managerId = null;
+        managers.forEach((employee) => {
+            if (employee.first_name === data.manager || employee.last_name === data.manager) {
+                managerId = employee.id;
+            }
+        })
+        insertEmployee(data.first_name, data.last_name, roleId, managerId);
     });
 }
 
 async function insertEmployee(newFirstName, newLastName, newRoleId, newManagerId) {
     try {
-    let newR = await employee.create({first_name: (newFirstName), last_name: (newLastName) , role_id: (newRoleId), department_id: (newManagerId) });
+    let newR = await employee.create({first_name: (newFirstName), last_name: (newLastName) , role_id: (newRoleId), manager_id: (newManagerId) });
     console.log(`Successfully added ${newFirstName} ${newLastName} to Employees`);
     init();
     } catch (err) {
@@ -190,6 +205,58 @@ async function viewRoles() {
     init();
 }
 
+async function updateEmployeesRole() {
+    const employees = await employee.findAll({ raw: true })
+    const employeeNames = [];
+    employees.forEach((employee) => {
+        employeeNames.push(`${employee.first_name}  ${employee.last_name}`)
+    });
+    const roles = await role.findAll({ raw: true })
+    const roleNames = [];
+    roles.forEach((role) => {
+        roleNames.push(role.title)
+    });
+    const updateEmpRole = await inquirer.prompt([
+        {
+            type: 'list',
+            name: 'employeeName',
+            message: 'Which employee would you like to update?',
+            choices: employeeNames
+        },
+        {
+            type: 'list',
+            name: 'newRole',
+            message: 'what is their new role?',
+            choices: roleNames
+        }
+    ]).then((data) => {
+        let employeeId = -1;
+        employees.forEach((employee) => {
+            const employeeFullName = `${employee.first_name}  ${employee.last_name}`
+            if (employeeFullName === data.employeeName) {
+                employeeId = employee.id;
+            } 
+        })
+        let roleId = -1;
+        roles.forEach((role) => {
+            if (role.title === data.newRole) {
+                roleId = role.id;
+            }
+        })
+        insertUpdatedRole(employeeId, roleId);
+        init();
+    });
+}
+
+async function insertUpdatedRole(empId, rId) {
+try{
+    const employeeToUpdate = await employee.findByPk(empId);
+    employeeToUpdate.role_id =  rId;
+    let updatedRole = await employeeToUpdate.save();
+} catch (err) {
+console.log(err)
+}
+}
 
 init();
 // 
