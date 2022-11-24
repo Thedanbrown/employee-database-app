@@ -167,7 +167,8 @@ async function addEmployee() {
         })
         let managerId = null;
         managers.forEach((employee) => {
-            if (employee.first_name === data.manager || employee.last_name === data.manager) {
+            const employeeFullName = `${employee.first_name}  ${employee.last_name}`
+            if (employeeFullName === data.manager) {
                 managerId = employee.id;
             }
         })
