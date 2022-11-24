@@ -3,7 +3,7 @@ const sequelize = require('../config/connection');
 const Role = require('./role')
 
 class Employee extends Model {}
-
+//creating the employee model
 Employee.init(
     {
         id: {

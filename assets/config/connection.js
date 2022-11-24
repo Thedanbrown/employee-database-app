@@ -1,3 +1,4 @@
+//creates a connection file with our login info hidden in a .env file for security
 const Sequelize = require('sequelize');
 require('dotenv').config();
 

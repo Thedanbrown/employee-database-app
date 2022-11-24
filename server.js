@@ -15,7 +15,7 @@ sequelize.authenticate().then(() => {
 }).catch((error) => {
     console.error('Unable to connect to the database: ', error);
 });
-
+//Startup function to run app
 async function init() {
     inquirer.prompt([
         {
@@ -56,7 +56,7 @@ async function init() {
         }
     })
 }
-
+// add functions for each model
 async function addDepartment() {
     const addDep = await inquirer.prompt([
         {
@@ -184,7 +184,7 @@ async function insertEmployee(newFirstName, newLastName, newRoleId, newManagerId
         console.log(err)
     }
 }
-
+// view functions
 async function viewDepartments() {
     const allDepartments = await Department.findAll({ raw: true })
     console.table(allDepartments);
@@ -202,7 +202,7 @@ async function viewRoles() {
     console.table(allDepartments);
     init();
 }
-
+// update employee role functions
 async function updateEmployeesRole() {
     const employees = await Employee.findAll({ raw: true })
     const employeeNames = [];

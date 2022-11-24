@@ -1,7 +1,7 @@
 const Employee = require('./employee');
 const Role = require('./role.js');
 const Department = require('./department');
-
+//creates relationships between different tables for sequelize using the models
 Department.hasOne(Role, {
     foreignKey: 'department_id',
     onDelete: 'CASCADE',
