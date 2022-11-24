@@ -5,9 +5,7 @@ const cTable = require('console.table');
 const Sequelize = require('sequelize');
 const sequelize = require('./assets/config/connection.js');
 //bringing in sequilize models  classes
-const department = require(__dirname + '/assets/models/department.js');
-const role = require(__dirname + '/assets/models/role.js');
-const employee = require(__dirname + '/assets/models/employee.js');
+const { Department , Role, Employee } = require('./assets/models');
 
 const PORT = process.env.PORT || 3001;
 
@@ -74,7 +72,7 @@ async function addDepartment() {
 
 async function insertDepartment(newDep) {
     try {
-    let newDepartment = await department.create({name: (newDep)});
+    let newDepartment = await Department.create({name: (newDep)});
     console.log(`Successfully added ${newDep} to Departments`);
     init();
     } catch (err) {
@@ -83,7 +81,7 @@ async function insertDepartment(newDep) {
 }
 
 async function addRole() {
-    const departments = await department.findAll({ raw: true })
+    const departments = await Department.findAll({ raw: true })
     const departmentNames = [];
     departments.forEach((department) => {
         departmentNames.push(department.name)
@@ -118,7 +116,7 @@ async function addRole() {
 
 async function insertRole(newTitle, newSalary, newDepId) {
     try {
-    let newR = await role.create({title: (newTitle),salary: (newSalary) ,department_id: (newDepId) });
+    let newR = await Role.create({title: (newTitle),salary: (newSalary) ,department_id: (newDepId) });
     console.log(`Successfully added ${newTitle} to Roles`);
     init();
     } catch (err) {
@@ -127,12 +125,12 @@ async function insertRole(newTitle, newSalary, newDepId) {
 }
 
 async function addEmployee() {
-    const roles = await role.findAll({ raw: true })
+    const roles = await Role.findAll({ raw: true })
     const roleNames = [];
     roles.forEach((role) => {
         roleNames.push(role.title)
     });
-    const managers = await employee.findAll({ raw: true })
+    const managers = await Employee.findAll({ raw: true })
     const managerNames = [];
     managers.forEach((employee) => {
         managerNames.push(`${employee.first_name}  ${employee.last_name}`)
@@ -179,7 +177,7 @@ async function addEmployee() {
 
 async function insertEmployee(newFirstName, newLastName, newRoleId, newManagerId) {
     try {
-    let newR = await employee.create({first_name: (newFirstName), last_name: (newLastName) , role_id: (newRoleId), manager_id: (newManagerId) });
+    let newR = await Employee.create({first_name: (newFirstName), last_name: (newLastName) , role_id: (newRoleId), manager_id: (newManagerId) });
     console.log(`Successfully added ${newFirstName} ${newLastName} to Employees`);
     init();
     } catch (err) {
@@ -188,30 +186,30 @@ async function insertEmployee(newFirstName, newLastName, newRoleId, newManagerId
 }
 
 async function viewDepartments() {
-    const allDepartments = await department.findAll({ raw: true })
+    const allDepartments = await Department.findAll({ raw: true })
     console.table(allDepartments);
     init();
 }
 
 async function viewEmployees() {
-    const allDepartments = await employee.findAll({ raw: true })
+    const allDepartments = await Employee.findAll({ attributes: { exclude: ['role_id', 'manager_id']}, raw: true, include: [{ model: Role, attributes: ['title', 'salary'] }] })
     console.table(allDepartments);
     init();
 }
 
 async function viewRoles() {
-    const allDepartments = await role.findAll({ raw: true })
+    const allDepartments = await Role.findAll({ attributes: { exclude: ['department_id', 'manager_id']}, raw: true, include: [{ model: Department, attributes: ['name']}] })
     console.table(allDepartments);
     init();
 }
 
 async function updateEmployeesRole() {
-    const employees = await employee.findAll({ raw: true })
+    const employees = await Employee.findAll({ raw: true })
     const employeeNames = [];
     employees.forEach((employee) => {
         employeeNames.push(`${employee.first_name}  ${employee.last_name}`)
     });
-    const roles = await role.findAll({ raw: true })
+    const roles = await Role.findAll({ raw: true })
     const roleNames = [];
     roles.forEach((role) => {
         roleNames.push(role.title)
@@ -244,13 +242,14 @@ async function updateEmployeesRole() {
             }
         })
         insertUpdatedRole(employeeId, roleId);
+        console.log('Updated role')
         init();
     });
 }
 
 async function insertUpdatedRole(empId, rId) {
 try{
-    const employeeToUpdate = await employee.findByPk(empId);
+    const employeeToUpdate = await Employee.findByPk(empId);
     employeeToUpdate.role_id =  rId;
     let updatedRole = await employeeToUpdate.save();
 } catch (err) {
